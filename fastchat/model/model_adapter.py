@@ -601,6 +601,29 @@ class VicunaAdapter(BaseModelAdapter):
                 "3. Downgrade fschat to fschat==0.1.10 (Not recommonded).\n"
             )
 
+class PhiAdapter(VicunaAdapter):
+    use_fast_tokenizer = False
+
+    def match(self, model_path: str):
+        return "phi" in model_path.lower()
+
+    def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+        revision = from_pretrained_kwargs.get("revision", "main")
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path, use_fast=self.use_fast_tokenizer, revision=revision,
+            trust_remote_code=True,
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True,
+            **from_pretrained_kwargs,
+        )
+        return model, tokenizer
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("fastchat_phi_v1")
+
 
 class AiroborosAdapter(BaseModelAdapter):
     """The model adapter for jondurbin/airoboros-*"""
@@ -1676,6 +1699,7 @@ class ZephyrAdapter(BaseModelAdapter):
 # The one registered earlier has a higher matching priority.
 register_model_adapter(PeftModelAdapter)
 register_model_adapter(VicunaAdapter)
+register_model_adapter(PhiAdapter)
 register_model_adapter(AiroborosAdapter)
 register_model_adapter(LongChatAdapter)
 register_model_adapter(GoogleT5Adapter)

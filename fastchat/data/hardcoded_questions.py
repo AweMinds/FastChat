@@ -10,7 +10,7 @@ def identity_questions():
     """
     content = []
 
-    name = "Vicuna"
+    name = "FastChat-Phi"
     org = "Large Model Systems Organization (LMSYS)"
 
     def generate_conversations(questions, answers):

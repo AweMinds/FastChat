@@ -368,6 +368,19 @@ register_conv_template(
     )
 )
 
+# Vicuna v1.1 template
+register_conv_template(
+    Conversation(
+        name="fastchat_phi_v1",
+        system_message="A chat between a curious user and an artificial intelligence assistant. "
+        "The assistant gives helpful, detailed, and polite answers to the user's questions.",
+        roles=("USER", "ASSISTANT"),
+        sep_style=SeparatorStyle.ADD_COLON_TWO,
+        sep=" ",
+        sep2="<|endoftext|>",
+    )
+)
+
 register_conv_template(
     Conversation(
         name="airoboros_v1",

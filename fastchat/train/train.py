@@ -84,7 +84,8 @@ def preprocess(
     sources,
     tokenizer: transformers.PreTrainedTokenizer,
 ) -> Dict:
-    conv = get_conversation_template("vicuna")
+    # conv = get_conversation_template("vicuna")
+    conv = get_conversation_template("fastchat_phi_v1")
     roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
 
     # Apply prompt templates
@@ -118,6 +119,7 @@ def preprocess(
     for conversation, target in zip(conversations, targets):
         total_len = int(target.ne(tokenizer.pad_token_id).sum())
 
+        print(conversation)
         turns = conversation.split(conv.sep2)
         cur_len = 1
         target[:cur_len] = IGNORE_TOKEN_ID
@@ -130,26 +132,31 @@ def preprocess(
             if len(parts) != 2:
                 break
             parts[0] += sep
+
+            print(parts[0])
             # "-2" is hardcoded for the Llama tokenizer to make the offset correct.
             instruction_len = len(tokenizer(parts[0]).input_ids) - 2
 
-            if i != 0 and not tokenizer.legacy:
-                # The legacy and non-legacy modes handle special tokens differently
-                instruction_len -= 1
+            # if i != 0 and not tokenizer.legacy:
+            # if i != 0:
+            #     # The legacy and non-legacy modes handle special tokens differently
+            #     instruction_len += 2
 
             # Ignore the user instructions
             target[cur_len : cur_len + instruction_len] = IGNORE_TOKEN_ID
             cur_len += turn_len
 
-            if i != 0 and not tokenizer.legacy:
-                # The legacy and non-legacy modes handle special tokens differently
-                cur_len -= 1
+            # if i != 0 and not tokenizer.legacy:
+            # if i != 0:
+            #     # The legacy and non-legacy modes handle special tokens differently
+            #     cur_len += 1
 
         target[cur_len:] = IGNORE_TOKEN_ID
 
-        if False:  # Inspect and check the correctness of masking
+        if True:  # Inspect and check the correctness of masking
             z = target.clone()
             z = torch.where(z == IGNORE_TOKEN_ID, tokenizer.unk_token_id, z)
+            # rank0_print(z.tolist())
             rank0_print(tokenizer.decode(z))
             exit()
 
